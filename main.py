@@ -5,6 +5,7 @@ import sys
 import os
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QTableWidgetItem, QAbstractItemView
 
 from DeviceAdapter import DeviceAdapter
@@ -51,6 +52,7 @@ class MyWin(QtWidgets.QMainWindow):
         self.ui.deviceTable.setRowCount(0)
         # connecting eject button
         self.ui.enableButton.clicked.connect(self.connect)
+        self.ui.disableButton.clicked.connect(self.disable)
 
     # close action
     def closeEvent(self, event):
@@ -102,45 +104,65 @@ class MyWin(QtWidgets.QMainWindow):
         # flag for finding this device
         flag = -1
         for deviceInfo in deviceList:
-            nameList.append(deviceInfo["GUID"])
+            nameList.append(deviceInfo["HardwareID"])
             # iterate all names in table
             for index in range(self.ui.deviceTable.rowCount()):
-                if (self.ui.deviceTable.item(index, 1) != None):
-                    if (self.ui.deviceTable.item(index, 1).text() == deviceInfo["GUID"]):
+                if (self.ui.deviceTable.item(index, 2) != None):
+                    if (self.ui.deviceTable.item(index, 2).text() == deviceInfo["HardwareID"]):
                         # save index of equals item
                         flag = index
             # if table don't contain this device
             if (flag == -1):
                 if (deviceInfo != None):
-                    self.errorInfo("append")
                     self.appendText(deviceInfo["Name"], deviceInfo["GUID"], deviceInfo["HardwareID"], deviceInfo["Manufacture"], deviceInfo["Provider"], deviceInfo["Description"], deviceInfo["sys file"], deviceInfo["Device Path"])
             else:
                 # update device information (size)
-                self.errorInfo("update'")
                 self.updateRow(flag, deviceInfo)
         # checking ejecting devices
         for i in range(0, self.ui.deviceTable.rowCount()):
-            if (self.ui.deviceTable.item(i, 1) != None):
-                if (not (self.ui.deviceTable.item(i, 1).text() in nameList)):
+            if (self.ui.deviceTable.item(i, 2) != None):
+                if (not (self.ui.deviceTable.item(i, 2).text() in nameList)):
                     # remove device from table
-                    self.errorInfo("remove")
                     self.ui.deviceTable.removeRow(i)
+
+    def refreshStatus(self):
+        for i in range(0, self.ui.deviceTable.rowCount()):
+            if (self.ui.deviceTable.item(i, 2) != None):
+                if (self.deviceAdapter.refreshStatus(self.ui.deviceTable.item(i, 2).text())):
+                    self.ui.deviceTable.item(i, 0).setBackground(QColor(125, 225, 125))
+                    self.ui.deviceTable.item(i, 1).setBackground(QColor(125, 225, 125))
+                    self.ui.deviceTable.item(i, 2).setBackground(QColor(125, 225, 125))
+                    self.ui.deviceTable.item(i, 3).setBackground(QColor(125, 225, 125))
+                    self.ui.deviceTable.item(i, 4).setBackground(QColor(125, 225, 125))
+                    self.ui.deviceTable.item(i, 5).setBackground(QColor(125, 225, 125))
+                    self.ui.deviceTable.item(i, 6).setBackground(QColor(125, 225, 125))
+                    self.ui.deviceTable.item(i, 7).setBackground(QColor(125, 225, 125))
+                else:
+                    self.ui.deviceTable.item(i, 0).setBackground(QColor(225, 125, 125))
+                    self.ui.deviceTable.item(i, 1).setBackground(QColor(225, 125, 125))
+                    self.ui.deviceTable.item(i, 2).setBackground(QColor(225, 125, 125))
+                    self.ui.deviceTable.item(i, 3).setBackground(QColor(225, 125, 125))
+                    self.ui.deviceTable.item(i, 4).setBackground(QColor(225, 125, 125))
+                    self.ui.deviceTable.item(i, 5).setBackground(QColor(225, 125, 125))
+                    self.ui.deviceTable.item(i, 6).setBackground(QColor(225, 125, 125))
+                    self.ui.deviceTable.item(i, 7).setBackground(QColor(225, 125, 125))
+
 
     def connect(self):
         # getting selected row
         indexes = self.ui.deviceTable.selectionModel().selectedRows()
         for index in sorted(indexes):
             # eject selected device
-            message = self.wifiAdapter.connect(self.ui.deviceTable.item(index.row(), 0).text())
+            message = self.deviceAdapter.enable(self.ui.deviceTable.item(index.row(), 2).text())
             # print error message if can't eject device
             self.errorInfo(message)
 
-    def ping(self):
+    def disable(self):
         # getting selected row
         indexes = self.ui.deviceTable.selectionModel().selectedRows()
         for index in sorted(indexes):
             # eject selected device
-            message = self.wifiAdapter.ping(self.ui.deviceTable.item(index.row(), 0).text())
+            message = self.deviceAdapter.disable(self.ui.deviceTable.item(index.row(), 2).text())
             # print error message if can't eject device
             self.errorInfo(message)
 
@@ -186,9 +208,9 @@ if __name__ == "__main__":
     window.show()
 
     # creating timer for refresh main window
-    timer = QTimer()
-    timer.timeout.connect(window.refreshDevices)
-    timer.start(3600000)
     window.refreshDevices()
+    timer = QTimer()
+    timer.timeout.connect(window.refreshStatus)
+    timer.start(30000)
     sys.exit(app.exec_())
     exit()

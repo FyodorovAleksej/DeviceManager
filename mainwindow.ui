@@ -23,6 +23,13 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
+         <widget class="QPushButton" name="disableButton">
+          <property name="text">
+           <string>Disable</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -38,7 +45,7 @@
         <item>
          <widget class="QPushButton" name="enableButton">
           <property name="text">
-           <string>Enable/Disable</string>
+           <string>Enable</string>
           </property>
          </widget>
         </item>

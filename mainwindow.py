@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\mainwindow.ui'
+# Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.9
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -19,7 +19,6 @@ class Ui_MainWindow(object):
         self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName("gridLayout")
         self.verticalLayout = QtWidgets.QVBoxLayout()
-        self.verticalLayout.setContentsMargins(11, 11, 11, 11)
         self.verticalLayout.setSpacing(6)
         self.verticalLayout.setObjectName("verticalLayout")
         self.deviceTable = QtWidgets.QTableWidget(self.centralWidget)
@@ -28,9 +27,11 @@ class Ui_MainWindow(object):
         self.deviceTable.setRowCount(0)
         self.verticalLayout.addWidget(self.deviceTable)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setContentsMargins(11, 11, 11, 11)
         self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName("horizontalLayout")
+        self.disableButton = QtWidgets.QPushButton(self.centralWidget)
+        self.disableButton.setObjectName("disableButton")
+        self.horizontalLayout.addWidget(self.disableButton)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.enableButton = QtWidgets.QPushButton(self.centralWidget)
@@ -59,6 +60,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.enableButton.setText(_translate("MainWindow", "Enable/Disable"))
+        self.disableButton.setText(_translate("MainWindow", "Disable"))
+        self.enableButton.setText(_translate("MainWindow", "Enable"))
         self.infoLabel.setText(_translate("MainWindow", "Info:"))
 

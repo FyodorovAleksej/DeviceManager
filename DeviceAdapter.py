@@ -18,18 +18,19 @@ class DeviceAdapter:
                         deviceInfo = {"Name": "", "GUID": "", "HardwareID": "", "Manufacture": "",
                                       "Provider": "",
                                       "Description": "", "sys file": "", "Device Path": ""}
-                        deviceInfo["GUID"] = prev
                         for i in re.findall(r"Name:.+\n", descr):
-                            deviceInfo["Name"] = deviceInfo["Name"] + i
-                        deviceInfo["HardwareID"] = ""
+                            deviceInfo["Name"] = deviceInfo["Name"] + i.split("Name:")[1]
+                        for i in re.findall(r"Inf section is.+\n", descr):
+                            deviceInfo["GUID"] = deviceInfo["GUID"] + i.split("Inf section is")[1]
+                        deviceInfo["HardwareID"] = prev
                         for i in re.findall(r"Manufacturer name is.+\n", descr) :
-                            deviceInfo["Manufacture"] = deviceInfo["Manufacture"] + i
+                            deviceInfo["Manufacture"] = deviceInfo["Manufacture"] + i.split("Manufacturer name is")[1]
                         for i in re.findall(r"Provider name is.+\n", descr):
-                            deviceInfo["Provider"] = deviceInfo["Provider"] + i
+                            deviceInfo["Provider"] = deviceInfo["Provider"] + i.split("Provider name is")[1]
                         for i in re.findall(r"Driver description is.+\n", descr):
-                            deviceInfo["Description"] = deviceInfo["Description"] + i
+                            deviceInfo["Description"] = deviceInfo["Description"] + i.split("Driver description is")[1]
                         for i in re.findall(r"Inf file is.+\n", descr):
-                            deviceInfo["Device Path"] = deviceInfo["Device Path"] + i
+                            deviceInfo["Device Path"] = deviceInfo["Device Path"] + i.split("Inf file is")[1]
                         subprocess.call("devcon driverfiles \"@" + prev[:-1] + "\" > " + os.getcwd() + "/sys.txt",
                                         shell=True)
                         sysfile = open(os.getcwd() + "/sys.txt", "r+")
@@ -45,14 +46,22 @@ class DeviceAdapter:
                 descr = descr + line
         return deviceList
 
+    def refreshStatus(self, hwid):
+        subprocess.call("devcon status \"@" + hwid[:-1] + "\" > " + os.getcwd() + "/status.txt", shell=True)
+        statusFile = open(os.getcwd() + "/status.txt", "r+")
+        text = statusFile.read()
+        statusFile.close()
+        if ("Driver is running." in text):
+            return True
+        else:
+            return False
+
+
+
     def enable(self, name):
-        subprocess.call("nmcli connection up " + name, shell=True)
-        return "Connected to " + name
+        subprocess.call("devcon /r enable \"@" + name + "\"", shell=True)
+        return "enable " + name
 
     def disable(self, name):
-        subprocess.call("ping -i 0.2 -c 1 bsuir.by > "+ os.getcwd() + "/ping.txt", shell=True)
-        logfile = open(os.getcwd() + "/ping.txt", "r+")
-        text = logfile.read()
-        text = text.split("--- bsuir.by ping statistics ---")[1]
-        logfile.close()
-        return text
+        subprocess.call("devcon /r disable \"@" + name + "\"", shell=True)
+        return "disable " + name
