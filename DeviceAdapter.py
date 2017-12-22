@@ -3,7 +3,9 @@ import subprocess
 import os
 
 class DeviceAdapter:
+    # getting all devices
     def getDeviceList(self):
+        # getting information about all devices
         subprocess.call("devcon drivernodes * > " + os.getcwd() + "/devices.txt", shell=True)
         deviceList = []
         devicefile = open(os.getcwd() + "/devices.txt", "r+")
@@ -15,6 +17,7 @@ class DeviceAdapter:
             if (line[0] != ' '):
                 if (line[0] != 'D'):
                     if (prev != ""):
+                        # getting info of current device
                         deviceInfo = {"Name": "", "GUID": "", "HardwareID": "", "Manufacture": "",
                                       "Provider": "",
                                       "Description": "", "sys file": "", "Device Path": ""}
@@ -39,6 +42,7 @@ class DeviceAdapter:
                         for i in re.findall(r"\n.+\.sys\n", systext):
                             deviceInfo["sys file"] = deviceInfo["sys file"] + i
                         deviceList.append(deviceInfo)
+                    # if not a number
                     if (line[0] >= '9'):
                         prev = line
                         descr = ""
@@ -46,6 +50,7 @@ class DeviceAdapter:
                 descr = descr + line
         return deviceList
 
+    # getting status of device
     def refreshStatus(self, hwid):
         subprocess.call("devcon status \"@" + hwid[:-1] + "\" > " + os.getcwd() + "/status.txt", shell=True)
         statusFile = open(os.getcwd() + "/status.txt", "r+")
@@ -56,12 +61,12 @@ class DeviceAdapter:
         else:
             return False
 
-
-
+    # enabling device by id
     def enable(self, name):
         subprocess.call("devcon /r enable \"@" + name + "\"", shell=True)
         return "enable " + name
 
+    # disabling device by id
     def disable(self, name):
         subprocess.call("devcon /r disable \"@" + name + "\"", shell=True)
         return "disable " + name

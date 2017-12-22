@@ -1,9 +1,6 @@
-import re
-import subprocess
 import sys
 
-import os
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QTableWidgetItem, QAbstractItemView
@@ -12,9 +9,12 @@ from DeviceAdapter import DeviceAdapter
 from mainwindow import Ui_MainWindow
 
 
+# https://github.com/FyodorovAleksej/DeviceManager
+
+
 # Main Window class
 class MyWin(QtWidgets.QMainWindow):
-    # USB Adapter for working with USB devices
+    # device Adapter for working with devices
     deviceAdapter = DeviceAdapter()
 
     # construct window
@@ -22,7 +22,6 @@ class MyWin(QtWidgets.QMainWindow):
         QtWidgets.QWidget.__init__(self, parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        # default column size
         #"Name": None, "GUID": None, "HardwareID": None, "Manufacture": None, "Provider": None,"Description": None, "sys file": None, "Device Path": None
         self.ui.deviceTable.setColumnCount(8)
         self.ui.deviceTable.insertRow(self.ui.deviceTable.rowCount())
@@ -50,15 +49,15 @@ class MyWin(QtWidgets.QMainWindow):
         headers.setStretchLastSection(True)
         # set 0 rows as default
         self.ui.deviceTable.setRowCount(0)
-        # connecting eject button
-        self.ui.enableButton.clicked.connect(self.connect)
-        self.ui.disableButton.clicked.connect(self.disable)
+        # connecting buttons
+        self.ui.enableButton.clicked.connect(self.enableCur)
+        self.ui.disableButton.clicked.connect(self.disableCur)
 
     # close action
     def closeEvent(self, event):
         event.accept()
 
-    # append 3 strings in table in 3 columns
+    # append 8 strings in table in 8 columns
     def appendText(self, name, guid, hardwareid, manufacture, provider, description, sys, path):
         # creating new TableItem and setting it parametres
         item1 = QTableWidgetItem(name)
@@ -98,7 +97,7 @@ class MyWin(QtWidgets.QMainWindow):
 
     def refreshDevices(self):
         self.errorInfo("refreshing")
-        # getting flesh-memory
+        # getting all devices info
         deviceList = self.deviceAdapter.getDeviceList()
         nameList = []
         # flag for finding this device
@@ -126,6 +125,7 @@ class MyWin(QtWidgets.QMainWindow):
                     self.ui.deviceTable.removeRow(i)
 
     def refreshStatus(self):
+        # refresh status of all devices
         for i in range(0, self.ui.deviceTable.rowCount()):
             if (self.ui.deviceTable.item(i, 2) != None):
                 if (self.deviceAdapter.refreshStatus(self.ui.deviceTable.item(i, 2).text())):
@@ -148,48 +148,48 @@ class MyWin(QtWidgets.QMainWindow):
                     self.ui.deviceTable.item(i, 7).setBackground(QColor(225, 125, 125))
 
 
-    def connect(self):
+    def enableCur(self):
         # getting selected row
         indexes = self.ui.deviceTable.selectionModel().selectedRows()
         for index in sorted(indexes):
-            # eject selected device
+            #  enable selected device
             message = self.deviceAdapter.enable(self.ui.deviceTable.item(index.row(), 2).text())
-            # print error message if can't eject device
+            # print info when device was enabled
             self.errorInfo(message)
 
-    def disable(self):
+    def disableCur(self):
         # getting selected row
         indexes = self.ui.deviceTable.selectionModel().selectedRows()
         for index in sorted(indexes):
-            # eject selected device
+            # disabling selected device
             message = self.deviceAdapter.disable(self.ui.deviceTable.item(index.row(), 2).text())
-            # print error message if can't eject device
+            # print error message if can't disable device
             self.errorInfo(message)
 
-    # print info about ejecting
+    # print info about enabling/disabling
     def errorInfo(self, message):
         if (message != None):
             print(message)
             self.ui.infoLabel.setText("info: " + message)
 
     # update information about input device
-    def updateRow(self, row, wifiInfo):
+    def updateRow(self, row, deviceInfo):
         # creating new item
-        item1 = QTableWidgetItem(wifiInfo["Name"])
+        item1 = QTableWidgetItem(deviceInfo["Name"])
         item1.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
-        item2 = QTableWidgetItem(wifiInfo["GUID"])
+        item2 = QTableWidgetItem(deviceInfo["GUID"])
         item2.setFlags(QtCore.Qt.ItemIsEnabled | Qt.ItemIsSelectable)
-        item3 = QTableWidgetItem(wifiInfo["HardwareID"])
+        item3 = QTableWidgetItem(deviceInfo["HardwareID"])
         item3.setFlags(QtCore.Qt.ItemIsEnabled | Qt.ItemIsSelectable)
-        item4 = QTableWidgetItem(wifiInfo["Manufacture"])
+        item4 = QTableWidgetItem(deviceInfo["Manufacture"])
         item4.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
-        item5 = QTableWidgetItem(wifiInfo["Provider"])
+        item5 = QTableWidgetItem(deviceInfo["Provider"])
         item5.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
-        item6 = QTableWidgetItem(wifiInfo["Description"])
+        item6 = QTableWidgetItem(deviceInfo["Description"])
         item6.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
-        item7 = QTableWidgetItem(wifiInfo["sys file"])
+        item7 = QTableWidgetItem(deviceInfo["sys file"])
         item7.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
-        item8 = QTableWidgetItem(wifiInfo["Device Path"])
+        item8 = QTableWidgetItem(deviceInfo["Device Path"])
         item8.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
         table = self.ui.deviceTable
         if (row < table.rowCount()):
@@ -211,6 +211,6 @@ if __name__ == "__main__":
     window.refreshDevices()
     timer = QTimer()
     timer.timeout.connect(window.refreshStatus)
-    timer.start(30000)
+    timer.start(40000)
     sys.exit(app.exec_())
     exit()
